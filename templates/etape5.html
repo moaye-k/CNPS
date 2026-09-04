@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block hero_title %}Section E — Appréciation d'ensemble{% endblock %}
+{% block content %}
+<form method="POST">
+
+    <div class="question-block">
+        <label class="field-label">Q14. Globalement, comment évaluez-vous la qualité de l'accueil qui vous a été réservé ?</label>
+        <div class="scale-row">
+            {% for valeur, libelle in echelle %}
+            <div class="scale-option">
+                <input type="radio" name="q14" id="q14_{{ valeur }}" value="{{ valeur }}" required>
+                <label for="q14_{{ valeur }}">{{ valeur }}<br>{{ libelle }}</label>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="question-block">
+        <label class="field-label">Q15. L'agent m'a permis de régler ma demande facilement.</label>
+        <div class="scale-row">
+            {% for valeur, libelle in echelle %}
+            <div class="scale-option">
+                <input type="radio" name="q15" id="q15_{{ valeur }}" value="{{ valeur }}" required>
+                <label for="q15_{{ valeur }}">{{ valeur }}<br>{{ libelle }}</label>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="question-block">
+        <label class="field-label">Q16. Recommanderiez-vous cet agent comme exemple de service de qualité ?</label>
+        <div class="radio-list">
+            <div class="radio-item"><input type="radio" name="q16" id="q16a" value="Oui, tout à fait" required><label for="q16a">Oui, tout à fait</label></div>
+            <div class="radio-item"><input type="radio" name="q16" id="q16b" value="Plutôt oui"><label for="q16b">Plutôt oui</label></div>
+            <div class="radio-item"><input type="radio" name="q16" id="q16c" value="Plutôt non"><label for="q16c">Plutôt non</label></div>
+            <div class="radio-item"><input type="radio" name="q16" id="q16d" value="Non"><label for="q16d">Non</label></div>
+        </div>
+    </div>
+
+    <label class="field-label">Q17. Qu'avez-vous particulièrement apprécié lors de cette interaction ? <em>(facultatif)</em></label>
+    <textarea name="q17"></textarea>
+
+    <label class="field-label">Q18. Qu'est-ce qui pourrait être amélioré ? <em>(facultatif)</em></label>
+    <textarea name="q18"></textarea>
+
+    <label class="field-label">Q19. Souhaitez-vous ajouter un mot d'encouragement à l'agent ? <em>(facultatif)</em></label>
+    <textarea name="q19"></textarea>
+
+    <button class="btn" type="submit">Envoyer mes réponses</button>
+</form>
+{% endblock %}

@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block hero_title %}Section A — Contexte de la visite{% endblock %}
+{% block content %}
+<form method="POST">
+    <label class="field-label">Q1. Sur quel site s'est déroulée votre visite ?</label>
+    <select name="site" id="site" required onchange="updateStructures()">
+        <option value="" disabled selected>-- Choisissez un site --</option>
+        {% for s in sites %}
+        <option value="{{ s }}">{{ s }}</option>
+        {% endfor %}
+    </select>
+
+    <label class="field-label" id="structure_label" style="display:none;">
+        Choisissez la direction / l'agence concernée
+    </label>
+    <select name="structure" id="structure" style="display:none;">
+        <option value="" disabled selected>-- Choisissez --</option>
+    </select>
+
+    <label class="field-label">Q2. Nom(s) et poste(s) de l'agent (choix multiples)</label>
+    <div class="checkbox-list">
+        {% for agent in agents %}
+        <div class="checkbox-item">
+            <input type="checkbox" name="agents" id="agent_{{ agent.id }}"
+                   value="{{ agent.nom }} ({{ agent.poste }} - {{ agent.structure }})">
+            <label for="agent_{{ agent.id }}">{{ agent.nom }} — {{ agent.poste }} ({{ agent.structure }})</label>
+        </div>
+        {% endfor %}
+    </div>
+
+    <label class="field-label">Q3. À quel moment de la journée a eu lieu votre visite ?</label>
+    <div class="radio-list">
+        <div class="radio-item">
+            <input type="radio" name="moment_journee" id="matin" value="Matin (avant 12h)" required>
+            <label for="matin">Matin (avant 12h)</label>
+        </div>
+        <div class="radio-item">
+            <input type="radio" name="moment_journee" id="apresmidi" value="Après-midi (après 12h)">
+            <label for="apresmidi">Après-midi (après 12h)</label>
+        </div>
+    </div>
+
+    <button class="btn" type="submit">Continuer</button>
+</form>
+
+<script>
+    const structures = {{ structures_json | tojson }};
+
+    function updateStructures() {
+        const site = document.getElementById('site').value;
+        const structureSelect = document.getElementById('structure');
+        const structureLabel = document.getElementById('structure_label');
+
+        structureSelect.innerHTML = '<option value="" disabled selected>-- Choisissez --</option>';
+
+        let key = null;
+        if (site === 'Siege CNPS') key = 'Siege';
+        else if (site === 'APS Abidjan') key = 'APS Abidjan';
+        else if (site === 'APS Province') key = 'APS Province';
+
+        if (key && structures[key]) {
+            structures[key].forEach(function(item) {
+                const opt = document.createElement('option');
+                opt.value = item;
+                opt.textContent = item;
+                structureSelect.appendChild(opt);
+            });
+            structureSelect.style.display = 'block';
+            structureLabel.style.display = 'block';
+            structureSelect.required = true;
+        } else {
+            structureSelect.style.display = 'none';
+            structureLabel.style.display = 'none';
+            structureSelect.required = false;
+        }
+    }
+</script>
+{% endblock %}

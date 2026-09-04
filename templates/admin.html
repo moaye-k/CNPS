@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Réponses collectées - Admin</title>
+    <style>
+        :root { --navy: #0b294b; --orange: #f26318; --ink: #142442; --muted: #738099; --line: #e5eaf0; }
+        * { box-sizing: border-box; }
+        body { margin: 0; background: #f3f6fa; color: var(--ink); font-family: 'Segoe UI', Arial, sans-serif; }
+        .admin-header { background: var(--navy); color: white; padding: 28px 24px 54px; }
+        .header-inner, .dashboard { max-width: 1120px; margin: 0 auto; }
+        .admin-kicker { margin: 0 0 4px; color: #aebcd0; font-size: 13px; font-weight: 600; }
+        .admin-header h1 { margin: 0; color: white; font-size: 25px; line-height: 1.2; }
+        .header-inner { position: relative; }
+        .export-actions { position: absolute; right: 0; top: 0; display: flex; gap: 8px; }
+        .export-btn { background: var(--orange); color: white; border-radius: 8px; padding: 10px 16px; text-decoration: none; font-size: 13px; font-weight: 700; }
+        .dashboard { margin: -28px auto 36px; padding: 0 20px; }
+        .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
+        .metric { min-height: 92px; padding: 14px 16px; background: white; border-radius: 12px; box-shadow: 0 8px 20px rgba(11, 41, 75, 0.08); }
+        .metric strong { display: block; font-size: 24px; line-height: 1.1; }
+        .metric:nth-child(2) strong { color: var(--orange); }
+        .metric:nth-child(3) strong { color: #168255; }
+        .metric span { color: var(--muted); font-size: 12px; }
+        .responses-panel { margin-top: 22px; overflow: hidden; background: white; border-radius: 14px; box-shadow: 0 8px 20px rgba(11, 41, 75, 0.08); }
+        .panel-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 20px 12px; }
+        .panel-toolbar h2 { margin: 0; font-size: 15px; }
+        .filter-form select { border: 1px solid var(--line); border-radius: 7px; padding: 7px 10px; color: var(--muted); background: white; }
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        th { padding: 10px 16px; background: #f4f6f9; color: var(--muted); font-size: 10px; letter-spacing: .04em; text-align: left; text-transform: uppercase; }
+        td { padding: 12px 16px; border-top: 1px solid var(--line); vertical-align: middle; }
+        td strong { display: block; max-width: 180px; }
+        .justifications { min-width: 230px; max-width: 320px; color: var(--muted); line-height: 1.45; }
+        .justifications strong { display: inline; color: var(--ink); font-size: 11px; }
+        .site-badge { display: inline-block; min-width: 68px; padding: 5px 7px; border-radius: 5px; color: #e75a16; background: #fff0e8; font-size: 11px; font-weight: 700; }
+        .site-badge.siege { color: #3568dc; background: #eaf0ff; }
+        .site-badge.province { color: #168255; background: #e5f6ed; }
+        .score { font-weight: 700; white-space: nowrap; }
+        .score::before { content: ''; display: inline-block; width: 6px; height: 6px; margin-right: 3px; border-radius: 50%; background: #168255; }
+        .score.low::before { background: var(--orange); }
+        .empty { padding: 36px; color: var(--muted); text-align: center; }
+        @media (max-width: 700px) {
+            .admin-header { padding: 22px 16px 48px; }
+            .admin-header h1 { padding-right: 0; font-size: 21px; }
+            .export-actions { position: static; flex-wrap: wrap; margin-top: 16px; }
+            .export-btn { display: inline-block; }
+            .dashboard { padding: 0 10px; }
+            .metrics { grid-template-columns: 1fr; gap: 6px; }
+            .metric { min-height: 70px; }
+            .panel-toolbar { align-items: flex-start; flex-direction: column; }
+            .filter-form, .filter-form select { width: 100%; }
+            th, td { padding: 10px 12px; }
+        }
+    </style>
+</head>
+<body>
+    <header class="admin-header">
+        <div class="header-inner">
+            <p class="admin-kicker">Espace administrateur</p>
+            <h1>Réponses collectées — Prix d'excellence</h1>
+            <div class="export-actions">
+                <a class="export-btn" href="?cle={{ request.args.get('cle') }}{% if selected_site %}&amp;site={{ selected_site|urlencode }}{% endif %}&amp;format=pdf">Exporter en PDF ↓</a>
+                <a class="export-btn" href="?cle={{ request.args.get('cle') }}{% if selected_site %}&amp;site={{ selected_site|urlencode }}{% endif %}&amp;format=csv">Exporter en CSV ↓</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="dashboard">
+        <section class="metrics" aria-label="Résumé des réponses">
+            <div class="metric"><strong>{{ total_count }}</strong><span>réponses reçues</span></div>
+            <div class="metric"><strong>{{ average_score }} / 5</strong><span>note moyenne globale</span></div>
+            <div class="metric"><strong>{{ recommendation_rate }}%</strong><span>recommandent l'agent</span></div>
+        </section>
+
+        <section class="responses-panel">
+            <div class="panel-toolbar">
+                <h2>Dernières réponses</h2>
+                <form class="filter-form" method="get">
+                    <input type="hidden" name="cle" value="{{ request.args.get('cle') }}">
+                    <label>
+                        <span class="sr-only">Filtrer par site</span>
+                        <select name="site" onchange="this.form.submit()">
+                            <option value="">Tous les sites ▾</option>
+                            {% for site in sites %}
+                            <option value="{{ site }}" {% if site == selected_site %}selected{% endif %}>{{ site }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                </form>
+            </div>
+            {% if rows %}
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Date</th><th>Site</th><th>Agent(s) évalué(s)</th><th>Structure</th><th>Satisfaction</th><th>Recommandation</th><th>Justificatifs</th></tr></thead>
+                    <tbody>
+                        {% for row in rows %}
+                        <tr>
+                            <td>{{ row.date_soumission[:10] | replace('-', '/') }}</td>
+                            <td><span class="site-badge {% if row.site == 'Siege CNPS' %}siege{% elif row.site == 'APS Province' %}province{% endif %}">{{ row.site }}</span></td>
+                            <td><strong>{{ row.agents_evalues or 'Non renseigné' }}</strong></td>
+                            <td>{{ row.structure }}</td>
+                            <td><span class="score {% if row.q14_satisfaction_globale|int < 4 %}low{% endif %}">{{ row.q14_satisfaction_globale or '-' }}/5</span></td>
+                            <td>{{ row.q16_recommandation or '-' }}</td>
+                            <td class="justifications">
+                                <div><strong>Apprécié :</strong> {{ row.q17_positif or 'Non renseigné' }}</div>
+                                <div><strong>À améliorer :</strong> {{ row.q18_amelioration or 'Non renseigné' }}</div>
+                                <div><strong>Encouragement :</strong> {{ row.q19_encouragement or 'Non renseigné' }}</div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="empty">Aucune réponse collectée pour ce filtre.</p>
+            {% endif %}
+        </section>
+    </main>
+</body>
+</html>

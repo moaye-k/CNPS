@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block hero_title %}{{ section }}{% endblock %}
+{% block content %}
+<form method="POST" action="{{ next_url }}">
+    {% for code, texte in questions %}
+    <div class="question-block">
+        <label class="field-label">{{ texte }}</label>
+        <div class="scale-row">
+            {% for valeur, libelle in echelle %}
+            <div class="scale-option">
+                <input type="radio" name="{{ code }}" id="{{ code }}_{{ valeur }}" value="{{ valeur }}" required>
+                <label for="{{ code }}_{{ valeur }}">{{ valeur }}<br>{{ libelle }}</label>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+    <button class="btn" type="submit">Continuer</button>
+</form>
+{% endblock %}
