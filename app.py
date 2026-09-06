@@ -1,6 +1,5 @@
 import os
 import csv
-import io
 import datetime
 from flask import Flask, Response, render_template, request, session, redirect, url_for
 from reportlab.lib import colors
@@ -203,17 +202,6 @@ def admin_reponses():
     selected_site = request.args.get("site", "")
     filtered_rows = [row for row in rows if not selected_site or row.get("site") == selected_site]
     filtered_rows.sort(key=lambda row: row.get("date_soumission", ""), reverse=True)
-
-    if request.args.get("format") == "csv":
-        output = io.StringIO()
-        writer = csv.DictWriter(output, fieldnames=CSV_HEADERS)
-        writer.writeheader()
-        writer.writerows(filtered_rows)
-        return Response(
-            output.getvalue(),
-            mimetype="text/csv",
-            headers={"Content-Disposition": "attachment; filename=reponses_cnps.csv"},
-        )
 
     if request.args.get("format") == "pdf":
         output = io.BytesIO()
