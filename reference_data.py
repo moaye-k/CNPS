@@ -19,16 +19,12 @@ STRUCTURES = {
     "APS Abidjan": [
         "APS Plateau", "APS Adjame", "APS Cocody", "APS Abobo",
         "APS Yopougon", "APS Koumassi", "APS Treichville", "APS Bingerville",
-        "Controle Medical Cocody", "Controle Medical Yopougon",
-        "Controle Medical Koumassi", "Controle Medical Treichville",
-        "Controle Medical Adjame",
     ],
     "APS Province": [
         "APS Yamoussoukro", "APS Bonoua", "APS Agboville", "APS San-Pedro",
         "APS Divo", "APS Korhogo", "APS Gagnoa", "APS Abengourou",
         "APS Daloa", "APS Bouake", "APS Man", "APS Daoukro",
         "APS Adzope", "APS Odienne", "APS Bondoukou",
-        "Controle Medical Bouake",
     ],
 }
 

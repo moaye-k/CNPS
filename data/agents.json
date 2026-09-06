@@ -273,25 +273,11 @@
     "structure": "APS KOUMASSI"
   },
   {
-    "id": 40,
-    "matricule": 2987,
-    "nom": "BROU AMOIN JOSIANE",
-    "poste": "SECRETAIRE MEDICALE",
-    "structure": "CONTRÔLE MEDICAL YOPOUGON"
-  },
-  {
     "id": 41,
     "matricule": 2988,
     "nom": "COULIBALY KANABIEN THERESE",
     "poste": "SECRETAIRE DE DIRECTION",
     "structure": "DCM"
-  },
-  {
-    "id": 42,
-    "matricule": 2990,
-    "nom": "TIECOURA LISSEKA AUDREY MANUELLA",
-    "poste": "SECRETAIRE MEDICALE",
-    "structure": "CONTRÔLE MEDICAL BOUAKE"
   },
   {
     "id": 43,
@@ -511,13 +497,6 @@
     "structure": "DJC"
   },
   {
-    "id": 74,
-    "matricule": 10201,
-    "nom": "N'GATTA HOUMAN VICTORINE",
-    "poste": "SECRETAIRE MEDICALE",
-    "structure": "CONTRÔLE MEDICAL KOUMASSI"
-  },
-  {
     "id": 75,
     "matricule": 10218,
     "nom": "SAYE AFFOUE ELODIE-EDWIGE",
@@ -530,13 +509,6 @@
     "nom": "BAKAYOKO DJENIMBA",
     "poste": "SECRETAIRE",
     "structure": "APS TREICHVILLE"
-  },
-  {
-    "id": 77,
-    "matricule": 10291,
-    "nom": "KOMENAN AFFOUE NATACHA",
-    "poste": "SECRETAIRE MEDICALE",
-    "structure": "CONTRÔLE MEDICAL COCODY"
   },
   {
     "id": 78,
@@ -558,20 +530,6 @@
     "nom": "DIERO LOGBOUN PAULE MARCELLE",
     "poste": "SECRETAIRE",
     "structure": "APS ODIENNE"
-  },
-  {
-    "id": 81,
-    "matricule": 10518,
-    "nom": "PARE VIVIANE",
-    "poste": "SECRETAIRE MEDICALE",
-    "structure": "CONTRÔLE MEDICAL TREICHVILLE"
-  },
-  {
-    "id": 82,
-    "matricule": 10536,
-    "nom": "DIBY OLGA MARIE HELENE",
-    "poste": "SECRETAIRE MEDICALE",
-    "structure": "CONTRÔLE MEDICAL ADJAME"
   },
   {
     "id": 83,
