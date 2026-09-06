@@ -69,7 +69,7 @@
     <main class="dashboard">
         <section class="metrics" aria-label="Résumé des réponses">
             <div class="metric"><strong>{{ total_count }}</strong><span>réponses reçues</span></div>
-            <div class="metric"><strong>{{ average_score }} / 5</strong><span>note moyenne globale</span></div>
+            <div class="metric"><strong>{% if best_agent %}{{ best_agent.score }} / 5{% else %}--{% endif %}</strong><span>{% if best_agent %}meilleure note : {{ best_agent.agent }}{% else %}pas assez de données{% endif %}</span></div>
             <div class="metric"><strong>{{ recommendation_rate }}%</strong><span>recommandent l'agent</span></div>
         </section>
 

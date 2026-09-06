@@ -28,6 +28,45 @@ CSV_HEADERS = [
 ]
 
 
+def get_best_agent(rows):
+    agent_stats = {}
+    positive_values = {"Oui, tout à fait", "Plutôt oui"}
+
+    for row in rows:
+        agents = [agent.strip() for agent in row.get("agents_evalues", "").split(";") if agent.strip()]
+        score_values = [
+            int(row[column])
+            for column in ("q14_satisfaction_globale", "q15_facilite")
+            if row.get(column, "").isdigit()
+        ]
+        if not agents or not score_values:
+            continue
+
+        recommendation_is_positive = row.get("q16_recommandation", "") in positive_values
+        for agent in agents:
+            stats = agent_stats.setdefault(agent, {"scores": [], "positive": 0, "responses": 0})
+            stats["scores"].extend(score_values)
+            stats["positive"] += int(recommendation_is_positive)
+            stats["responses"] += 1
+
+    eligible_agents = []
+    for agent, stats in agent_stats.items():
+        if stats["responses"] < 3 or stats["positive"] < 3:
+            continue
+        average = sum(stats["scores"]) / len(stats["scores"])
+        recommendation_rate = stats["positive"] / stats["responses"]
+        eligible_agents.append((average, recommendation_rate, agent))
+
+    if not eligible_agents:
+        return None
+    average, recommendation_rate, agent = max(eligible_agents)
+    return {
+        "agent": agent,
+        "score": round(average, 1),
+        "recommendation_rate": round(recommendation_rate * 100),
+    }
+
+
 def save_response(data: dict):
     os.makedirs(DATA_DIR, exist_ok=True)
     file_exists = os.path.isfile(RESPONSES_FILE)
@@ -289,6 +328,7 @@ def admin_reponses():
     positive_recommendations = sum(value.startswith("Oui") for value in recommendations)
     average_score = round(sum(scores) / len(scores), 1) if scores else 0
     recommendation_rate = round(positive_recommendations / len(recommendations) * 100) if recommendations else 0
+    best_agent = get_best_agent(filtered_rows)
 
     return render_template(
         "admin.html",
@@ -298,6 +338,7 @@ def admin_reponses():
         selected_site=selected_site,
         total_count=len(filtered_rows),
         average_score=average_score,
+        best_agent=best_agent,
         recommendation_rate=recommendation_rate,
     )
 
