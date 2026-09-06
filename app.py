@@ -1,7 +1,9 @@
 import os
 import csv
+import io
 import datetime
 from flask import Flask, Response, render_template, request, session, redirect, url_for
+from openpyxl import Workbook
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib.styles import getSampleStyleSheet
@@ -202,6 +204,26 @@ def admin_reponses():
     selected_site = request.args.get("site", "")
     filtered_rows = [row for row in rows if not selected_site or row.get("site") == selected_site]
     filtered_rows.sort(key=lambda row: row.get("date_soumission", ""), reverse=True)
+
+    if request.args.get("format") == "xlsx":
+        workbook = Workbook()
+        worksheet = workbook.active
+        worksheet.title = "Réponses"
+        worksheet.append(CSV_HEADERS)
+        for row in filtered_rows:
+            worksheet.append([row.get(header, "") for header in CSV_HEADERS])
+        worksheet.freeze_panes = "A2"
+        worksheet.auto_filter.ref = worksheet.dimensions
+        for column_cells in worksheet.columns:
+            width = min(max(max(len(str(cell.value or "")) for cell in column_cells) + 2, 12), 40)
+            worksheet.column_dimensions[column_cells[0].column_letter].width = width
+        output = io.BytesIO()
+        workbook.save(output)
+        return Response(
+            output.getvalue(),
+            mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={"Content-Disposition": "attachment; filename=reponses_cnps.xlsx"},
+        )
 
     if request.args.get("format") == "pdf":
         output = io.BytesIO()

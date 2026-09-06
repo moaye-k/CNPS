@@ -61,6 +61,7 @@
             <h1>Réponses collectées — Prix d'excellence</h1>
             <div class="export-actions">
                 <a class="export-btn" href="?cle={{ request.args.get('cle') }}{% if selected_site %}&amp;site={{ selected_site|urlencode }}{% endif %}&amp;format=pdf">Exporter en PDF ↓</a>
+                <a class="export-btn" href="?cle={{ request.args.get('cle') }}{% if selected_site %}&amp;site={{ selected_site|urlencode }}{% endif %}&amp;format=xlsx">Exporter en Excel ↓</a>
             </div>
         </div>
     </header>
