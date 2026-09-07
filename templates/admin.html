@@ -7,29 +7,49 @@
     <style>
         :root { --navy: #0b294b; --orange: #f26318; --ink: #142442; --muted: #738099; --line: #e5eaf0; }
         * { box-sizing: border-box; }
-        body { margin: 0; background: #f3f6fa; color: var(--ink); font-family: 'Segoe UI', Arial, sans-serif; }
-        .admin-header { background: var(--navy); color: white; padding: 28px 24px 54px; }
+        body { margin: 0; background: linear-gradient(180deg, #edf3f8 0, #f7f9fb 48%, #eef3f7 100%); color: var(--ink); font-family: 'Segoe UI', Arial, sans-serif; }
+        .admin-header { background: linear-gradient(120deg, #092440 0%, #0b294b 62%, #164e76 100%); color: white; padding: 24px 24px 68px; }
         .header-inner, .dashboard { max-width: 1500px; margin: 0 auto; }
         .admin-kicker { margin: 0 0 4px; color: #aebcd0; font-size: 13px; font-weight: 600; }
-        .admin-header h1 { margin: 0; color: white; font-size: 25px; line-height: 1.2; }
+        .admin-header h1 { max-width: 620px; margin: 0; color: white; font-size: 28px; letter-spacing: .01em; line-height: 1.2; }
         .header-inner { position: relative; }
+        .admin-nav { display: flex; justify-content: flex-end; margin-bottom: 16px; }
+        .admin-menu-toggle {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 12px;
+            border: 1px solid #42617f;
+            border-radius: 8px;
+            background: transparent;
+            color: white;
+            font: inherit;
+            cursor: pointer;
+        }
+        .admin-menu-links { display: flex; gap: 18px; align-items: center; }
+        .admin-menu-links a { color: #dbe6f2; font-size: 13px; text-decoration: none; }
+        .admin-menu-links a:hover { color: white; text-decoration: underline; }
         .export-actions { position: absolute; right: 0; top: 0; display: flex; gap: 8px; }
-        .export-btn { background: var(--orange); color: white; border-radius: 8px; padding: 10px 16px; text-decoration: none; font-size: 13px; font-weight: 700; }
-        .dashboard { margin: -28px auto 36px; padding: 0 28px; }
-        .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
-        .metric { min-height: 92px; padding: 14px 16px; background: white; border-radius: 12px; box-shadow: 0 8px 20px rgba(11, 41, 75, 0.08); }
-        .metric strong { display: block; font-size: 24px; line-height: 1.1; }
+        .export-btn { background: var(--orange); color: white; border-radius: 8px; padding: 10px 16px; text-decoration: none; font-size: 13px; font-weight: 700; box-shadow: 0 5px 12px rgba(242, 99, 24, .22); transition: transform .2s ease, background .2s ease; }
+        .export-btn:hover { background: #d84e0e; transform: translateY(-1px); }
+        .dashboard { margin: -34px auto 42px; padding: 0 28px; }
+        .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+        .metric { position: relative; min-height: 106px; padding: 18px 20px; overflow: hidden; background: rgba(255, 255, 255, .96); border: 1px solid rgba(219, 227, 235, .9); border-radius: 14px; box-shadow: 0 12px 28px rgba(11, 41, 75, 0.09); }
+        .metric::after { content: ''; position: absolute; right: -18px; bottom: -28px; width: 92px; height: 92px; border-radius: 50%; background: #edf3f8; }
+        .metric strong { position: relative; z-index: 1; display: block; font-size: 28px; line-height: 1.1; }
         .metric:nth-child(2) strong { color: var(--orange); }
         .metric:nth-child(3) strong { color: #168255; }
-        .metric span { color: var(--muted); font-size: 12px; }
-        .responses-panel { margin-top: 22px; overflow: hidden; background: white; border-radius: 14px; box-shadow: 0 8px 20px rgba(11, 41, 75, 0.08); }
-        .panel-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 20px 12px; }
-        .panel-toolbar h2 { margin: 0; font-size: 15px; }
-        .filter-form select { border: 1px solid var(--line); border-radius: 7px; padding: 7px 10px; color: var(--muted); background: white; }
+        .metric span { position: relative; z-index: 1; display: block; margin-top: 6px; color: var(--muted); font-size: 12px; }
+        .responses-panel { margin-top: 24px; overflow: hidden; background: white; border: 1px solid rgba(219, 227, 235, .9); border-radius: 14px; box-shadow: 0 12px 28px rgba(11, 41, 75, 0.08); }
+        .panel-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 20px 22px 16px; border-bottom: 1px solid var(--line); }
+        .panel-toolbar h2 { margin: 0; color: var(--ink); font-size: 16px; }
+        .filter-form select { min-width: 170px; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; color: var(--muted); background: white; cursor: pointer; }
         .table-wrap { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; font-size: 14px; }
         th { padding: 13px 18px; background: #f4f6f9; color: var(--muted); font-size: 11px; letter-spacing: .04em; text-align: left; text-transform: uppercase; }
         td { padding: 16px 18px; border-top: 1px solid var(--line); vertical-align: middle; }
+        tbody tr { transition: background .2s ease; }
+        tbody tr:hover { background: #fbfcfe; }
         td strong { display: block; max-width: 180px; }
         .justifications { min-width: 230px; max-width: 320px; color: var(--muted); line-height: 1.45; }
         .justifications strong { display: inline; color: var(--ink); font-size: 11px; }
@@ -42,9 +62,36 @@
         .empty { padding: 36px; color: var(--muted); text-align: center; }
         @media (max-width: 700px) {
             .admin-header { padding: 22px 16px 48px; }
+            .admin-nav { position: relative; margin-bottom: 14px; }
+            .admin-menu-toggle { display: inline-flex; }
+            .admin-menu-links {
+                display: flex;
+                position: fixed;
+                z-index: 5;
+                right: 0;
+                bottom: 0;
+                left: 0;
+                min-width: 0;
+                max-height: 70vh;
+                padding: 8px;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0;
+                border-top: 1px solid #42617f;
+                border-radius: 14px 14px 0 0;
+                background: var(--navy);
+                box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
+                transform: translateY(100%);
+                visibility: hidden;
+                transition: transform 0.25s ease, visibility 0.25s ease;
+            }
+            .admin-nav.menu-open .admin-menu-links {
+                transform: translateY(0);
+                visibility: visible;
+            }
+            .admin-menu-links a { padding: 10px 12px; }
             .admin-header h1 { padding-right: 0; font-size: 21px; }
-            .export-actions { position: static; flex-wrap: wrap; margin-top: 16px; }
-            .export-btn { display: inline-block; }
+            .export-actions { display: none; }
             .dashboard { padding: 0 10px; }
             .metrics { grid-template-columns: 1fr; gap: 6px; }
             .metric { min-height: 70px; }
@@ -57,6 +104,16 @@
 <body>
     <header class="admin-header">
         <div class="header-inner">
+            <nav class="admin-nav" aria-label="Navigation administrateur">
+                <button class="admin-menu-toggle" type="button" aria-expanded="false" aria-controls="admin-menu">
+                    <span aria-hidden="true">☰</span>
+                    <span>Menu</span>
+                </button>
+                <div class="admin-menu-links" id="admin-menu">
+                    <a href="?cle={{ request.args.get('cle') }}&amp;format=pdf">Exporter PDF</a>
+                    <a href="?cle={{ request.args.get('cle') }}&amp;format=xlsx">Exporter Excel</a>
+                </div>
+            </nav>
             <p class="admin-kicker">Espace administrateur</p>
             <h1>Réponses collectées — Prix d'excellence</h1>
             <div class="export-actions">
@@ -69,7 +126,7 @@
     <main class="dashboard">
         <section class="metrics" aria-label="Résumé des réponses">
             <div class="metric"><strong>{{ total_count }}</strong><span>réponses reçues</span></div>
-            <div class="metric"><strong>{% if best_agent %}{{ best_agent.score }} / 5{% else %}--{% endif %}</strong><span>{% if best_agent %}meilleure note : {{ best_agent.agent }}{% else %}pas assez de données{% endif %}</span></div>
+            <div class="metric"><strong>{% if best_agent %}{{ best_agent.score }}{% else %}--{% endif %}</strong><span>Meilleure note</span></div>
             <div class="metric"><strong>{{ recommendation_rate }}%</strong><span>recommandent l'agent</span></div>
         </section>
 
@@ -117,5 +174,24 @@
             {% endif %}
         </section>
     </main>
+    <script>
+        const adminMenu = document.querySelector('.admin-nav');
+        const adminMenuToggle = document.querySelector('.admin-menu-toggle');
+        if (adminMenu && adminMenuToggle) {
+            adminMenuToggle.addEventListener('click', () => {
+                const isOpen = adminMenu.classList.toggle('menu-open');
+                adminMenuToggle.setAttribute('aria-expanded', String(isOpen));
+            });
+            adminMenu.addEventListener('click', (event) => {
+                if (event.target.closest('a')) adminMenu.classList.remove('menu-open');
+            });
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') {
+                    adminMenu.classList.remove('menu-open');
+                    adminMenuToggle.setAttribute('aria-expanded', 'false');
+                }
+            });
+        }
+    </script>
 </body>
 </html>

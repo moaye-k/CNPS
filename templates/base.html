@@ -128,7 +128,8 @@
             margin-top: 6px;
         }
         .scale-option {
-            flex: 1;
+            flex: 1 1 0;
+            min-width: 0;
             text-align: center;
         }
         .scale-option label {
@@ -214,10 +215,16 @@
             label.field-label { font-size: 16px; line-height: 1.45; }
             select, input[type=text], textarea { font-size: 16px; }
             .checkbox-item label, .radio-item label { font-size: 13px; line-height: 1.3; }
-            .scale-row { gap: 4px; margin-top: 10px; }
-            .scale-option { min-width: 0; }
+            .scale-row { gap: 2px; margin-top: 10px; }
             .scale-option input { width: 20px; height: 20px; }
-            .scale-option label { font-size: 11px; line-height: 1.35; color: #374151; }
+            .scale-option label {
+                min-height: 30px;
+                padding: 0 1px;
+                font-size: 10px;
+                line-height: 1.3;
+                color: #374151;
+                overflow-wrap: anywhere;
+            }
             button.btn, a.btn {
                 width: 100%;
                 text-align: center;
