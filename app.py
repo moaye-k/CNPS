@@ -317,7 +317,7 @@ def admin_reponses():
         if not selected_structures
         or agent.get("structure", "").casefold() in {structure.casefold() for structure in selected_structures}
     ]
-    total_people_to_evaluate = len(available_agents) if available_agents else 0
+    total_site_visitors = len(filtered_rows)
 
     if request.args.get("format") == "xlsx":
         workbook = Workbook()
@@ -426,7 +426,7 @@ def admin_reponses():
         best_agent=best_agent,
         recommendation_rate=recommendation_rate,
         ranked_agents=ranked_agents,
-        total_people_to_evaluate=total_people_to_evaluate,
+        total_site_visitors=total_site_visitors,
         agent_rank_map=agent_rank_map,
     )
 

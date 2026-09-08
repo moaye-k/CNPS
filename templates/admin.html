@@ -128,7 +128,7 @@
     <main class="dashboard">
         <section class="metrics" aria-label="Résumé des réponses">
             <div class="metric"><strong>{{ total_count }}</strong><span>Réponses reçues</span></div>
-            <div class="metric"><strong>{{ total_people_to_evaluate }}</strong><span>Personnes à évaluer</span></div>
+            <div class="metric"><strong>{{ total_site_visitors }}</strong><span>Personnes ayant visité le site</span></div>
             <div class="metric"><strong>{% if best_agent %}{{ best_agent.score|round(1) }}{% else %}--{% endif %}</strong><span>Meilleure note</span></div>
             <div class="metric"><strong>{{ recommendation_rate }}%</strong><span>Recommandation</span></div>
         </section>
