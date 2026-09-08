@@ -106,7 +106,7 @@ def get_agent_rank_label(agent_name, agent_rank_map):
     labels = []
     for name in names:
         rank = agent_rank_map.get(name)
-        labels.append(rank if rank else name)
+        labels.append(f"{rank} — {name}" if rank else name)
     return "; ".join(labels)
 
 
