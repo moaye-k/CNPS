@@ -105,8 +105,11 @@ def get_agent_rank_label(agent_name, agent_rank_map):
         return "Non renseigné"
     labels = []
     for name in names:
-        rank = agent_rank_map.get(name)
-        labels.append(f"{rank} — {name}" if rank else name)
+        ranking = agent_rank_map.get(name)
+        if ranking:
+            labels.append(f"{ranking['rank']} — {name} — Moyenne : {ranking['score']}/100")
+        else:
+            labels.append(name)
     return "; ".join(labels)
 
 
@@ -405,7 +408,10 @@ def admin_reponses():
     agent_rank_map = {}
     for index, item in enumerate(ranked_agents, start=1):
         suffix = "er" if index == 1 else "e"
-        agent_rank_map[item["agent"]] = f"{index}{suffix}"
+        agent_rank_map[item["agent"]] = {
+            "rank": f"{index}{suffix}",
+            "score": item["score"],
+        }
 
     return render_template(
         "admin.html",
