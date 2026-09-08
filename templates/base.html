@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Prix d'Excellence CNPS{% endblock %}</title>
+    <title>{% block title %}Enquête de satisfaction secrétaire et assimilés{% endblock %}</title>
     <style>
         * { box-sizing: border-box; }
         body {
@@ -153,6 +153,13 @@
             cursor: pointer;
             text-decoration: none;
         }
+        .form-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        button.btn-secondary, a.btn-secondary {
+            background: #e7edf3;
+            color: #142442;
+            margin-top: 28px;
+        }
+        button.btn-secondary:hover, a.btn-secondary:hover { background: #d6e0ea; }
         button.btn:hover, a.btn:hover { background: #d84e0e; }
         .question-block {
             margin-bottom: 24px;
@@ -230,6 +237,8 @@
                 text-align: center;
                 margin-top: 20px;
             }
+            .form-actions { gap: 8px; }
+            .form-actions button.btn, .form-actions a.btn { margin-top: 12px; }
         }
     </style>
 </head>
@@ -238,7 +247,7 @@
         <div class="header-inner">
             <div class="brand-row">
                 <img src="/assets/ips_caisse_nationale_de_pr_voyance_sociale_logo.jpeg" alt="Logo CNPS">
-                <span>Prix d'excellence CNPS</span>
+                <span>Enquête de satisfaction secrétaire et assimilés</span>
             </div>
             {% block header_content %}
             {% if step %}
@@ -247,7 +256,7 @@
             <div class="header-progress"><div class="header-progress-fill" data-progress="{{ (step / total_steps * 100) | int }}"></div></div>
             {% else %}
             <div class="eyebrow">Edition 2026</div>
-            <h1 class="hero-title">{% block hero_title_home %}Prix d'Excellence{% endblock %}</h1>
+            <h1 class="hero-title">{% block hero_title_home %}Enquête de satisfaction secrétaire et assimilés{% endblock %}</h1>
             <p class="hero-subtitle">Direction marketing, communication et relation client</p>
             {% endif %}
             {% endblock %}

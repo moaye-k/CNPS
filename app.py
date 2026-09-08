@@ -28,43 +28,89 @@ CSV_HEADERS = [
 ]
 
 
-def get_best_agent(rows):
+def _normalize_score_0_100(value):
+    try:
+        numeric = float(value)
+    except (TypeError, ValueError):
+        return 0
+    return max(0, min(100, (numeric / 5) * 100))
+
+
+def _normalize_recommendation_score(value):
+    if value is None:
+        return 0
+
+    try:
+        numeric = float(value)
+        if 0 <= numeric <= 10:
+            return max(0, min(100, (numeric / 10) * 100))
+    except (TypeError, ValueError):
+        pass
+
+    normalized = str(value).strip().lower()
+    mapping = {
+        "oui, tout à fait": 100,
+        "oui, tout a fait": 100,
+        "plutôt oui": 75,
+        "plutot oui": 75,
+        "neutre": 50,
+        "insatisfait": 25,
+        "pas du tout": 0,
+        "non, pas vraiment": 25,
+        "non": 25,
+    }
+    return mapping.get(normalized, 50)
+
+
+def get_ranked_agents(rows, limit=5):
     agent_stats = {}
-    positive_values = {"Oui, tout à fait", "Plutôt oui"}
 
     for row in rows:
         agents = [agent.strip() for agent in row.get("agents_evalues", "").split(";") if agent.strip()]
-        score_values = [
-            int(row[column])
-            for column in ("q14_satisfaction_globale", "q15_facilite")
-            if row.get(column, "").isdigit()
-        ]
-        if not agents or not score_values:
+        if not agents:
             continue
 
-        recommendation_is_positive = row.get("q16_recommandation", "") in positive_values
+        csat = _normalize_score_0_100(row.get("q14_satisfaction_globale", 0))
+        ces = _normalize_score_0_100(row.get("q15_facilite", 0))
+        nps = _normalize_recommendation_score(row.get("q16_recommandation"))
+        composite = round((csat + ces + nps) / 3, 1)
+
         for agent in agents:
-            stats = agent_stats.setdefault(agent, {"scores": [], "positive": 0, "responses": 0})
-            stats["scores"].extend(score_values)
-            stats["positive"] += int(recommendation_is_positive)
+            stats = agent_stats.setdefault(agent, {"total_score": 0, "responses": 0})
+            stats["total_score"] += composite
             stats["responses"] += 1
 
-    eligible_agents = []
+    ranked = []
     for agent, stats in agent_stats.items():
-        if stats["responses"] < 3 or stats["positive"] < 3:
-            continue
-        average = sum(stats["scores"]) / len(stats["scores"])
-        recommendation_rate = stats["positive"] / stats["responses"]
-        eligible_agents.append((average, recommendation_rate, agent))
+        score = round(stats["total_score"] / stats["responses"], 1)
+        ranked.append({"agent": agent, "score": score})
 
-    if not eligible_agents:
+    ranked.sort(key=lambda item: item["score"], reverse=True)
+    return ranked[:limit]
+
+
+def get_best_agent(rows):
+    ranked = get_ranked_agents(rows, limit=1)
+    if not ranked:
         return None
-    average, recommendation_rate, agent = max(eligible_agents)
-    return {
-        "agent": agent,
-        "score": round(average, 1),
-        "recommendation_rate": round(recommendation_rate * 100),
-    }
+    best = ranked[0]
+    return {"agent": best["agent"], "score": best["score"], "recommendation_rate": 0}
+
+
+def get_agent_rank_label(agent_name, agent_rank_map):
+    if not agent_name:
+        return "Non renseigné"
+    names = [name.strip() for name in str(agent_name).split(";") if name.strip()]
+    if not names:
+        return "Non renseigné"
+    labels = []
+    for name in names:
+        rank = agent_rank_map.get(name)
+        labels.append(rank if rank else name)
+    return "; ".join(labels)
+
+
+app.jinja_env.globals['get_agent_rank_label'] = get_agent_rank_label
 
 
 def save_response(data: dict):
@@ -128,7 +174,8 @@ def etape2():
     ]
     return render_template("notation.html", questions=questions, echelle=ECHELLE,
                             section="Section B — Accueil et apparence",
-                            step=2, total_steps=5, next_url=url_for("etape2"))
+                            step=2, total_steps=5, next_url=url_for("etape2"),
+                            previous_url=url_for("etape1"))
 
 
 # ----------------------------------------------------------------
@@ -154,7 +201,8 @@ def etape3():
     ]
     return render_template("notation.html", questions=questions, echelle=ECHELLE,
                             section="Section C — Disponibilité et écoute",
-                            step=3, total_steps=5, next_url=url_for("etape3"))
+                            step=3, total_steps=5, next_url=url_for("etape3"),
+                            previous_url=url_for("etape2"))
 
 
 # ----------------------------------------------------------------
@@ -178,7 +226,8 @@ def etape4():
     ]
     return render_template("notation.html", questions=questions, echelle=ECHELLE,
                             section="Section D — Orientation et prise de congé",
-                            step=4, total_steps=5, next_url=url_for("etape4"))
+                            step=4, total_steps=5, next_url=url_for("etape4"),
+                            previous_url=url_for("etape3"))
 
 
 # ----------------------------------------------------------------
@@ -217,7 +266,8 @@ def etape5():
         session.clear()
         return redirect(url_for("merci"))
 
-    return render_template("etape5.html", echelle=ECHELLE, step=5, total_steps=5)
+    return render_template("etape5.html", echelle=ECHELLE, step=5, total_steps=5,
+                           previous_url=url_for("etape4"))
 
 
 @app.route("/merci")
@@ -241,8 +291,30 @@ def admin_reponses():
             rows = list(reader)
 
     selected_site = request.args.get("site", "")
+    selected_agent = request.args.get("agent", "")
     filtered_rows = [row for row in rows if not selected_site or row.get("site") == selected_site]
+    if selected_agent:
+        filtered_rows = [
+            row for row in filtered_rows
+            if any(
+                agent.strip() == selected_agent or agent.strip().startswith(f"{selected_agent} (")
+                for agent in row.get("agents_evalues", "").split(";")
+            )
+        ]
     filtered_rows.sort(key=lambda row: row.get("date_soumission", ""), reverse=True)
+
+    site_structure_groups = {
+        "Siege CNPS": "Siege",
+        "APS Abidjan": "APS Abidjan",
+        "APS Province": "APS Province",
+    }
+    selected_structures = STRUCTURES[site_structure_groups[selected_site]] if selected_site in site_structure_groups else None
+    available_agents = [
+        agent for agent in get_agents()
+        if not selected_structures
+        or agent.get("structure", "").casefold() in {structure.casefold() for structure in selected_structures}
+    ]
+    total_people_to_evaluate = len(available_agents) if available_agents else 0
 
     if request.args.get("format") == "xlsx":
         workbook = Workbook()
@@ -282,7 +354,7 @@ def admin_reponses():
         body_style.leading = 10
         scores = [int(row["q14_satisfaction_globale"]) for row in filtered_rows if row.get("q14_satisfaction_globale", "").isdigit()]
         recommendations = [row.get("q16_recommandation", "") for row in filtered_rows]
-        positive_recommendations = sum(value.startswith("Oui") for value in recommendations)
+        positive_recommendations = sum(value in {"Satisfait", "Très satisfait"} for value in recommendations)
         average_score = round(sum(scores) / len(scores), 1) if scores else 0
         recommendation_rate = round(positive_recommendations / len(recommendations) * 100) if recommendations else 0
         scope = selected_site or "Tous les sites"
@@ -325,10 +397,15 @@ def admin_reponses():
 
     scores = [int(row["q14_satisfaction_globale"]) for row in filtered_rows if row.get("q14_satisfaction_globale", "").isdigit()]
     recommendations = [row.get("q16_recommandation", "") for row in filtered_rows]
-    positive_recommendations = sum(value.startswith("Oui") for value in recommendations)
+    positive_recommendations = sum(value in {"Satisfait", "Très satisfait"} for value in recommendations)
     average_score = round(sum(scores) / len(scores), 1) if scores else 0
     recommendation_rate = round(positive_recommendations / len(recommendations) * 100) if recommendations else 0
-    best_agent = get_best_agent(filtered_rows)
+    ranked_agents = get_ranked_agents(filtered_rows, limit=5)
+    best_agent = ranked_agents[0] if ranked_agents else None
+    agent_rank_map = {}
+    for index, item in enumerate(ranked_agents, start=1):
+        suffix = "er" if index == 1 else "e"
+        agent_rank_map[item["agent"]] = f"{index}{suffix}"
 
     return render_template(
         "admin.html",
@@ -336,10 +413,15 @@ def admin_reponses():
         headers=CSV_HEADERS,
         sites=SITES,
         selected_site=selected_site,
+        selected_agent=selected_agent,
+        available_agents=available_agents,
         total_count=len(filtered_rows),
         average_score=average_score,
         best_agent=best_agent,
         recommendation_rate=recommendation_rate,
+        ranked_agents=ranked_agents,
+        total_people_to_evaluate=total_people_to_evaluate,
+        agent_rank_map=agent_rank_map,
     )
 
 

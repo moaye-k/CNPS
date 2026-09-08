@@ -15,6 +15,9 @@
         </div>
     </div>
     {% endfor %}
-    <button class="btn" type="submit">Continuer</button>
+    <div class="form-actions">
+        <a class="btn btn-secondary" href="{{ previous_url }}">Précédent</a>
+        <button class="btn" type="submit">Continuer</button>
+    </div>
 </form>
 {% endblock %}

@@ -28,13 +28,14 @@
     </div>
 
     <div class="question-block">
-        <label class="field-label">Q16. Recommanderiez-vous cet agent comme exemple de service de qualité ?</label>
-        <div class="radio-list">
-            <div class="radio-item"><input type="radio" name="q16" id="q16a" value="Oui, tout à fait" required><label for="q16a">Oui, tout à fait</label></div>
-            <div class="radio-item"><input type="radio" name="q16" id="q16b" value="Plutôt oui"><label for="q16b">Plutôt oui</label></div>
-            <div class="radio-item"><input type="radio" name="q16" id="q16c" value="Plutôt non"><label for="q16c">Plutôt non</label></div>
-            <div class="radio-item"><input type="radio" name="q16" id="q16d" value="Non"><label for="q16d">Non</label></div>
-            <div class="radio-item"><input type="radio" name="q16" id="q16e" value="Neutre"><label for="q16e">Neutre</label></div>
+        <label class="field-label">Q16. Sur une échelle de 1 à 10, quelle note donnez-vous à votre satisfaction globale ?</label>
+        <div class="scale-row">
+            {% for i in range(1, 11) %}
+            <div class="scale-option">
+                <input type="radio" name="q16" id="q16_{{ i }}" value="{{ i }}" required>
+                <label for="q16_{{ i }}">{{ i }}</label>
+            </div>
+            {% endfor %}
         </div>
     </div>
 
@@ -47,6 +48,9 @@
     <label class="field-label">Q19. Souhaitez-vous ajouter un mot d'encouragement à l'agent ? <em>(facultatif)</em></label>
     <textarea name="q19"></textarea>
 
-    <button class="btn" type="submit">Envoyer mes réponses</button>
+    <div class="form-actions">
+        <a class="btn btn-secondary" href="{{ previous_url }}">Précédent</a>
+        <button class="btn" type="submit">Envoyer mes réponses</button>
+    </div>
 </form>
 {% endblock %}

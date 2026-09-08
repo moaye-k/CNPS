@@ -6,24 +6,24 @@
     <select name="site" id="site" required onchange="updateStructures()">
         <option value="" disabled selected>-- Choisissez un site --</option>
         {% for s in sites %}
-        <option value="{{ s }}">{{ s }}</option>
+        <option value="{{ s }}">{{ s | replace('APS ', 'Agence ') }}</option>
         {% endfor %}
     </select>
 
     <label class="field-label" id="structure_label" style="display:none;">
         Choisissez la direction / l'agence concernée
     </label>
-    <select name="structure" id="structure" style="display:none;">
+    <select name="structure" id="structure" style="display:none;" onchange="updateAgentChoices()">
         <option value="" disabled selected>-- Choisissez --</option>
     </select>
 
     <label class="field-label">Q2. Nom(s) et poste(s) de l'agent (choix multiples)</label>
     <div class="checkbox-list">
         {% for agent in agents %}
-        <div class="checkbox-item">
-            <input type="checkbox" name="agents" id="agent_{{ agent.id }}"
+        <div class="checkbox-item" data-agent-structure="{{ agent.structure | lower }}" style="display:none;">
+            <input type="checkbox" name="agents" id="agent_{{ agent.id }}" disabled
                    value="{{ agent.nom }} ({{ agent.poste }} - {{ agent.structure }})">
-            <label for="agent_{{ agent.id }}">{{ agent.nom }} — {{ agent.poste }} ({{ agent.structure }})</label>
+            <label for="agent_{{ agent.id }}">{{ agent.nom }} — {{ agent.poste }} ({{ agent.structure | replace('APS ', 'Agence ') }})</label>
         </div>
         {% endfor %}
     </div>
@@ -46,6 +46,20 @@
 <script>
     const structures = {{ structures_json | tojson }};
 
+    function updateAgentChoices() {
+        const site = document.getElementById('site').value;
+        const structure = document.getElementById('structure').value;
+        const isReady = Boolean(site && structure);
+        const allowedStructures = isReady ? [structure.toLowerCase()] : [];
+
+        document.querySelectorAll('[data-agent-structure]').forEach(function(item) {
+            const isVisible = isReady && allowedStructures.includes(item.dataset.agentStructure);
+            item.style.display = isVisible ? 'flex' : 'none';
+            item.querySelector('input').disabled = !isVisible;
+            if (!isVisible) item.querySelector('input').checked = false;
+        });
+    }
+
     function updateStructures() {
         const site = document.getElementById('site').value;
         const structureSelect = document.getElementById('structure');
@@ -62,7 +76,7 @@
             structures[key].forEach(function(item) {
                 const opt = document.createElement('option');
                 opt.value = item;
-                opt.textContent = item;
+                opt.textContent = item.replace(/^APS\s+/i, 'Agence ');
                 structureSelect.appendChild(opt);
             });
             structureSelect.style.display = 'block';
@@ -73,6 +87,8 @@
             structureLabel.style.display = 'none';
             structureSelect.required = false;
         }
+
+        updateAgentChoices();
     }
 </script>
 {% endblock %}

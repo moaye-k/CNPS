@@ -43,6 +43,7 @@
         .responses-panel { margin-top: 24px; overflow: hidden; background: white; border: 1px solid rgba(219, 227, 235, .9); border-radius: 14px; box-shadow: 0 12px 28px rgba(11, 41, 75, 0.08); }
         .panel-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 20px 22px 16px; border-bottom: 1px solid var(--line); }
         .panel-toolbar h2 { margin: 0; color: var(--ink); font-size: 16px; }
+        .filter-form { display: flex; gap: 8px; }
         .filter-form select { min-width: 170px; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; color: var(--muted); background: white; cursor: pointer; }
         .table-wrap { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; font-size: 14px; }
@@ -96,7 +97,8 @@
             .metrics { grid-template-columns: 1fr; gap: 6px; }
             .metric { min-height: 70px; }
             .panel-toolbar { align-items: flex-start; flex-direction: column; }
-            .filter-form, .filter-form select { width: 100%; }
+            .filter-form { width: 100%; flex-direction: column; }
+            .filter-form select { width: 100%; }
             th, td { padding: 10px 12px; }
         }
     </style>
@@ -115,47 +117,40 @@
                 </div>
             </nav>
             <p class="admin-kicker">Espace administrateur</p>
-            <h1>Réponses collectées — Prix d'excellence</h1>
+            <h1>Réponses collectées — Enquête de satisfaction secrétaire et assimilés</h1>
             <div class="export-actions">
-                <a class="export-btn" href="?cle={{ request.args.get('cle') }}{% if selected_site %}&amp;site={{ selected_site|urlencode }}{% endif %}&amp;format=pdf">Exporter en PDF ↓</a>
-                <a class="export-btn" href="?cle={{ request.args.get('cle') }}{% if selected_site %}&amp;site={{ selected_site|urlencode }}{% endif %}&amp;format=xlsx">Exporter en Excel ↓</a>
+                <a class="export-btn" href="?cle={{ request.args.get('cle') }}{% if selected_site %}&amp;site={{ selected_site|urlencode }}{% endif %}{% if selected_agent %}&amp;agent={{ selected_agent|urlencode }}{% endif %}&amp;format=pdf">Exporter en PDF ↓</a>
+                <a class="export-btn" href="?cle={{ request.args.get('cle') }}{% if selected_site %}&amp;site={{ selected_site|urlencode }}{% endif %}{% if selected_agent %}&amp;agent={{ selected_agent|urlencode }}{% endif %}&amp;format=xlsx">Exporter en Excel ↓</a>
             </div>
         </div>
     </header>
 
     <main class="dashboard">
         <section class="metrics" aria-label="Résumé des réponses">
-            <div class="metric"><strong>{{ total_count }}</strong><span>réponses reçues</span></div>
-            <div class="metric"><strong>{% if best_agent %}{{ best_agent.score }}{% else %}--{% endif %}</strong><span>Meilleure note</span></div>
-            <div class="metric"><strong>{{ recommendation_rate }}%</strong><span>recommandent l'agent</span></div>
+            <div class="metric"><strong>{{ total_count }}</strong><span>Réponses reçues</span></div>
+            <div class="metric"><strong>{{ total_people_to_evaluate }}</strong><span>Personnes à évaluer</span></div>
+            <div class="metric"><strong>{% if best_agent %}{{ best_agent.score|round(1) }}{% else %}--{% endif %}</strong><span>Meilleure note</span></div>
+            <div class="metric"><strong>{{ recommendation_rate }}%</strong><span>Recommandation</span></div>
         </section>
 
         <section class="responses-panel">
             <div class="panel-toolbar">
                 <h2>Dernières réponses</h2>
-                <form class="filter-form" method="get">
-                    <input type="hidden" name="cle" value="{{ request.args.get('cle') }}">
-                    <label>
-                        <span class="sr-only">Filtrer par site</span>
-                        <select name="site" onchange="this.form.submit()">
-                            <option value="">Tous les sites ▾</option>
-                            {% for site in sites %}
-                            <option value="{{ site }}" {% if site == selected_site %}selected{% endif %}>{{ site }}</option>
-                            {% endfor %}
-                        </select>
-                    </label>
-                </form>
             </div>
             {% if rows %}
             <div class="table-wrap">
                 <table>
-                    <thead><tr><th>Date</th><th>Site</th><th>Agent(s) évalué(s)</th><th>Structure</th><th>Satisfaction</th><th>Recommandation</th><th>Justificatifs</th></tr></thead>
+                    <thead><tr><th>Date</th><th>Site</th><th>Classement de l’agent</th><th>Structure</th><th>CSAT</th><th>CES</th><th>NPS</th></tr></thead>
                     <tbody>
                         {% for row in rows %}
                         <tr>
                             <td>{{ row.date_soumission[:10] | replace('-', '/') }}</td>
-                            <td><span class="site-badge {% if row.site == 'Siege CNPS' %}siege{% elif row.site == 'APS Province' %}province{% endif %}">{{ row.site }}</span></td>
-                            <td><strong>{{ row.agents_evalues or 'Non renseigné' }}</strong></td>
+                            <td><span class="site-badge {% if row.site == 'Siege CNPS' %}siege{% elif row.site == 'APS Province' %}province{% endif %}">{{ row.site | replace('APS ', 'Agence ') }}</span></td>
+                            <td style="display: flex; flex-direction: column; justify-content: flex-end; min-height: 60px;">
+                                <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: flex-end; min-height: 38px;">
+                                    {{ get_agent_rank_label(row.agents_evalues, agent_rank_map) }}
+                                </div>
+                            </td>
                             <td>{{ row.structure }}</td>
                             <td><span class="score {% if row.q14_satisfaction_globale|int < 4 %}low{% endif %}">{{ row.q14_satisfaction_globale or '-' }}/5</span></td>
                             <td>{{ row.q16_recommandation or '-' }}</td>
