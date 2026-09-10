@@ -2,6 +2,7 @@ import os
 import csv
 import io
 import datetime
+import uuid
 from flask import Flask, Response, render_template, request, session, redirect, url_for
 from openpyxl import Workbook
 from reportlab.lib import colors
@@ -17,6 +18,7 @@ app.secret_key = os.environ.get("SECRET_KEY", "change-moi-en-production")
 
 DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
 RESPONSES_FILE = os.path.join(DATA_DIR, "reponses.csv")
+VISITORS_FILE = os.path.join(DATA_DIR, "visitors.txt")
 
 CSV_HEADERS = [
     "date_soumission", "site", "structure", "agents_evalues", "moment_journee",
@@ -25,6 +27,13 @@ CSV_HEADERS = [
     "q11_orientation", "q12_efficacite", "q13_prise_conge",
     "q14_satisfaction_globale", "q15_facilite", "q16_recommandation",
     "q17_positif", "q18_amelioration", "q19_encouragement",
+]
+
+RATING_FIELDS = [
+    "q4_salutation", "q5_courtoisie", "q6_apparence",
+    "q7_disponibilite", "q8_comprehension", "q9_ecoute",
+    "q10_reformulation", "q11_orientation", "q12_efficacite",
+    "q13_prise_conge", "q14_satisfaction_globale", "q15_facilite",
 ]
 
 
@@ -62,6 +71,26 @@ def _normalize_recommendation_score(value):
     return mapping.get(normalized, 50)
 
 
+def _is_positive_recommendation(value):
+    try:
+        return float(value) >= 9
+    except (TypeError, ValueError):
+        return str(value).strip().lower() in {
+            "oui, tout à fait", "oui, tout a fait", "très satisfait",
+        }
+
+
+def get_response_score(row):
+    scores = []
+    if str(row.get("q14_satisfaction_globale", "")).strip():
+        scores.append(_normalize_score_0_100(row.get("q14_satisfaction_globale")))
+    if str(row.get("q15_facilite", "")).strip():
+        scores.append(_normalize_score_0_100(row.get("q15_facilite")))
+    if str(row.get("q16_recommandation", "")).strip():
+        scores.append(_normalize_recommendation_score(row.get("q16_recommandation")))
+    return round(sum(scores) / len(scores), 1) if scores else 0
+
+
 def get_ranked_agents(rows, limit=5):
     agent_stats = {}
 
@@ -70,11 +99,12 @@ def get_ranked_agents(rows, limit=5):
         if not agents:
             continue
 
-        csat = _normalize_score_0_100(row.get("q14_satisfaction_globale", 0))
-        ces = _normalize_score_0_100(row.get("q15_facilite", 0))
-        nps = _normalize_recommendation_score(row.get("q16_recommandation"))
-        composite = round((csat + ces + nps) / 3, 1)
-
+        has_score = any(str(row.get(field, "")).strip() for field in (
+            "q14_satisfaction_globale", "q15_facilite", "q16_recommandation"
+        ))
+        if not has_score:
+            continue
+        composite = get_response_score(row)
         for agent in agents:
             stats = agent_stats.setdefault(agent, {"total_score": 0, "responses": 0})
             stats["total_score"] += composite
@@ -126,12 +156,36 @@ def save_response(data: dict):
         writer.writerow(data)
 
 
+def record_visit():
+    visitor_id = session.get("visitor_id") or str(uuid.uuid4())
+    os.makedirs(DATA_DIR, exist_ok=True)
+    if not session.get("visitor_id"):
+        with open(VISITORS_FILE, "a", encoding="utf-8") as f:
+            f.write(f"{visitor_id}\n")
+    return visitor_id
+
+
+def get_visitor_count():
+    if not os.path.isfile(VISITORS_FILE):
+        return 0
+    with open(VISITORS_FILE, encoding="utf-8") as f:
+        return sum(1 for line in f if line.strip())
+
+
 # ----------------------------------------------------------------
 # Étape 0 : Accueil
 # ----------------------------------------------------------------
+@app.route("/health")
+def health():
+    return {"status": "ok"}, 200
+
+
 @app.route("/")
+@app.route("/prix-excellence-cnps")
 def home():
+    visitor_id = record_visit()
     session.clear()
+    session["visitor_id"] = visitor_id
     return render_template("home.html")
 
 
@@ -304,7 +358,10 @@ def admin_reponses():
                 for agent in row.get("agents_evalues", "").split(";")
             )
         ]
-    filtered_rows.sort(key=lambda row: row.get("date_soumission", ""), reverse=True)
+    filtered_rows.sort(
+        key=lambda row: (get_response_score(row), row.get("date_soumission", "")),
+        reverse=True,
+    )
 
     site_structure_groups = {
         "Siege CNPS": "Siege",
@@ -317,7 +374,7 @@ def admin_reponses():
         if not selected_structures
         or agent.get("structure", "").casefold() in {structure.casefold() for structure in selected_structures}
     ]
-    total_site_visitors = len(filtered_rows)
+    total_site_visitors = get_visitor_count()
 
     if request.args.get("format") == "xlsx":
         workbook = Workbook()
@@ -357,7 +414,7 @@ def admin_reponses():
         body_style.leading = 10
         scores = [int(row["q14_satisfaction_globale"]) for row in filtered_rows if row.get("q14_satisfaction_globale", "").isdigit()]
         recommendations = [row.get("q16_recommandation", "") for row in filtered_rows]
-        positive_recommendations = sum(value in {"Satisfait", "Très satisfait"} for value in recommendations)
+        positive_recommendations = sum(_is_positive_recommendation(value) for value in recommendations)
         average_score = round(sum(scores) / len(scores), 1) if scores else 0
         recommendation_rate = round(positive_recommendations / len(recommendations) * 100) if recommendations else 0
         scope = selected_site or "Tous les sites"
@@ -366,10 +423,10 @@ def admin_reponses():
             Paragraph(f"Filtre : {scope} | Réponses : {len(filtered_rows)} | Note moyenne : {average_score}/5 | Recommandation : {recommendation_rate}%", body_style),
             Spacer(1, 8),
         ]
-        table_data = [["Date", "Site", "Agent(s) évalué(s)", "Structure", "Satisfaction", "Recommandation"]]
+        table_data = [["Moment de la visite", "Site", "Agent(s) évalué(s)", "Structure", "Satisfaction", "Recommandation"]]
         for row in filtered_rows:
             table_data.append([
-                row.get("date_soumission", "")[:10],
+            row.get("moment_journee", "") or "-",
                 Paragraph(row.get("site", ""), body_style),
                 Paragraph(row.get("agents_evalues", "") or "Non renseigné", body_style),
                 Paragraph(row.get("structure", ""), body_style),
@@ -400,10 +457,10 @@ def admin_reponses():
 
     scores = [int(row["q14_satisfaction_globale"]) for row in filtered_rows if row.get("q14_satisfaction_globale", "").isdigit()]
     recommendations = [row.get("q16_recommandation", "") for row in filtered_rows]
-    positive_recommendations = sum(value in {"Satisfait", "Très satisfait"} for value in recommendations)
+    positive_recommendations = sum(_is_positive_recommendation(value) for value in recommendations)
     average_score = round(sum(scores) / len(scores), 1) if scores else 0
     recommendation_rate = round(positive_recommendations / len(recommendations) * 100) if recommendations else 0
-    ranked_agents = get_ranked_agents(filtered_rows, limit=5)
+    ranked_agents = get_ranked_agents(filtered_rows, limit=None)
     best_agent = ranked_agents[0] if ranked_agents else None
     agent_rank_map = {}
     for index, item in enumerate(ranked_agents, start=1):
@@ -413,9 +470,17 @@ def admin_reponses():
             "score": item["score"],
         }
 
+    display_rows = []
+    for row in filtered_rows[:5]:
+        agents = [agent.strip() for agent in row.get("agents_evalues", "").split(";") if agent.strip()]
+        for agent in agents or [""]:
+            display_row = dict(row)
+            display_row["agents_evalues"] = agent
+            display_rows.append(display_row)
+
     return render_template(
         "admin.html",
-        rows=filtered_rows[:5],
+        rows=display_rows,
         headers=CSV_HEADERS,
         sites=SITES,
         selected_site=selected_site,

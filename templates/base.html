@@ -7,22 +7,23 @@
     <style>
         * { box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background: #f3f6fa;
+            font-family: 'Trebuchet MS', 'Segoe UI', sans-serif;
+            background: radial-gradient(circle at 10% 8%, rgba(242, 99, 24, .10), transparent 28%), radial-gradient(circle at 90% 25%, rgba(11, 91, 145, .10), transparent 32%), #f3f6fa;
             min-height: 100vh;
             margin: 0;
             color: #142442;
         }
-        .site-header { background: #0b294b; color: white; padding: 28px 24px 58px; }
+        .site-header { position: relative; overflow: hidden; background: linear-gradient(120deg, #071f3a 0%, #0b294b 58%, #0f5880 100%); color: white; padding: 28px 24px 64px; }
+        .site-header::after { content: ''; position: absolute; right: -70px; bottom: -100px; width: 300px; height: 220px; border: 1px solid rgba(255, 255, 255, .14); border-radius: 50%; transform: rotate(-18deg); }
         .header-inner { max-width: 680px; margin: 0 auto; }
-        .brand-row { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
-        .brand-row img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; background: white; }
-        .brand-row span { color: #aebcd0; font-size: 13px; }
-        .eyebrow { color: #9baac0; font-size: 13px; font-weight: 600; margin-bottom: 8px; }
-        .hero-title { margin: 0; color: white; font-size: 28px; line-height: 1.2; }
+        .brand-row { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; }
+        .brand-row img { width: 44px; height: 44px; border: 3px solid white; border-radius: 12px; object-fit: cover; background: white; box-shadow: 0 8px 18px rgba(0, 0, 0, .18); }
+        .brand-row span { color: #dbe7f2; font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+        .eyebrow { color: #ffc39e; font-size: 12px; font-weight: 700; letter-spacing: .08em; margin-bottom: 9px; text-transform: uppercase; }
+        .hero-title { margin: 0; color: white; font-size: 30px; line-height: 1.18; }
         .hero-subtitle { color: #aebcd0; margin: 12px 0 0; line-height: 1.45; }
-        .header-progress { height: 5px; margin-top: 16px; background: #294462; border-radius: 5px; overflow: hidden; }
-        .header-progress-fill { height: 100%; width: 0; background: #f26318; transition: width 0.5s ease; }
+        .header-progress { height: 7px; margin-top: 20px; background: rgba(255, 255, 255, .16); border-radius: 99px; overflow: hidden; }
+        .header-progress-fill { height: 100%; width: 0; background: linear-gradient(90deg, #ff9a5e, #f26318); border-radius: inherit; transition: width 0.5s ease; }
         .merci-page .site-header { padding-bottom: 76px; }
         .merci-mark {
             width: 56px;
@@ -42,13 +43,14 @@
         .card {
             position: relative;
             z-index: 1;
-            background: white;
+            background: rgba(255, 255, 255, .97);
+            border: 1px solid rgba(219, 227, 235, .9);
             border-radius: 14px;
             padding: 32px;
             max-width: 680px;
             width: 100%;
-            box-shadow: 0 18px 36px rgba(11, 41, 75, 0.14);
-            margin: -36px auto 32px;
+            box-shadow: 0 22px 48px rgba(11, 41, 75, 0.13);
+            margin: -42px auto 32px;
             animation: card-enter 0.55s ease-out both;
         }
         .home-card {
@@ -76,7 +78,7 @@
             padding: 14px 28px;
         }
         h1 { color: #0f4c81; margin-top: 0; font-size: 22px; }
-        h2 { color: #142442; font-size: 18px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px; }
+        h2 { color: #142442; font-size: 18px; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; }
         p.subtitle { color: #6b7280; font-size: 14px; margin-top: -8px; }
         .progress-bar-wrap {
             background: #e5e7eb;
@@ -99,25 +101,32 @@
         select, input[type=text], textarea {
             width: 100%;
             padding: 10px 12px;
-            border: 2px solid #e5e7eb;
-            border-radius: 8px;
+            border: 1px solid #d8e0e8;
+            border-radius: 10px;
             font-size: 15px;
             font-family: inherit;
+            background: #fbfcfe;
+            transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
         }
+        select:focus, input[type=text]:focus, textarea:focus { outline: none; border-color: #0f5880; background: white; box-shadow: 0 0 0 4px rgba(15, 88, 128, .11); }
         textarea { resize: vertical; min-height: 70px; }
         .checkbox-list, .radio-list {
             max-height: 260px;
             overflow-y: auto;
-            border: 2px solid #e5e7eb;
-            border-radius: 8px;
+            border: 1px solid #d8e0e8;
+            border-radius: 10px;
             padding: 10px;
+            background: #fbfcfe;
         }
         .checkbox-item, .radio-item {
             display: flex;
             align-items: center;
             padding: 6px 4px;
             border-bottom: 1px solid #f3f4f6;
+            border-radius: 7px;
+            transition: background .2s ease;
         }
+        .checkbox-item:hover, .radio-item:hover { background: #eef6fb; }
         .checkbox-item:last-child, .radio-item:last-child { border-bottom: none; }
         .checkbox-item input, .radio-item input { margin-right: 10px; }
         .checkbox-item label, .radio-item label { font-weight: normal; margin: 0; font-size: 14px; }
@@ -144,13 +153,15 @@
             display: inline-block;
             margin-top: 28px;
             padding: 13px 30px;
-            background: #f26318;
+            background: linear-gradient(135deg, #f26318, #d94f0f);
             color: white;
             border: none;
             border-radius: 10px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
+            box-shadow: 0 8px 16px rgba(242, 99, 24, .24);
+            transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
             text-decoration: none;
         }
         .form-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
@@ -160,7 +171,7 @@
             margin-top: 28px;
         }
         button.btn-secondary:hover, a.btn-secondary:hover { background: #d6e0ea; }
-        button.btn:hover, a.btn:hover { background: #d84e0e; }
+        button.btn:hover, a.btn:hover { background: linear-gradient(135deg, #d84e0e, #bd430d); box-shadow: 0 10px 20px rgba(242, 99, 24, .30); transform: translateY(-1px); }
         .question-block {
             margin-bottom: 24px;
             padding-bottom: 18px;

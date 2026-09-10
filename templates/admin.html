@@ -106,18 +106,8 @@
 <body>
     <header class="admin-header">
         <div class="header-inner">
-            <nav class="admin-nav" aria-label="Navigation administrateur">
-                <button class="admin-menu-toggle" type="button" aria-expanded="false" aria-controls="admin-menu">
-                    <span aria-hidden="true">☰</span>
-                    <span>Menu</span>
-                </button>
-                <div class="admin-menu-links" id="admin-menu">
-                    <a href="?cle={{ request.args.get('cle') }}&amp;format=pdf">Exporter PDF</a>
-                    <a href="?cle={{ request.args.get('cle') }}&amp;format=xlsx">Exporter Excel</a>
-                </div>
-            </nav>
             <p class="admin-kicker">Espace administrateur</p>
-            <h1>Réponses collectées — Enquête de satisfaction secrétaire et assimilés</h1>
+            <h1>Enquête collectée</h1>
             <div class="export-actions">
                 <a class="export-btn" href="?cle={{ request.args.get('cle') }}{% if selected_site %}&amp;site={{ selected_site|urlencode }}{% endif %}{% if selected_agent %}&amp;agent={{ selected_agent|urlencode }}{% endif %}&amp;format=pdf">Exporter en PDF ↓</a>
                 <a class="export-btn" href="?cle={{ request.args.get('cle') }}{% if selected_site %}&amp;site={{ selected_site|urlencode }}{% endif %}{% if selected_agent %}&amp;agent={{ selected_agent|urlencode }}{% endif %}&amp;format=xlsx">Exporter en Excel ↓</a>
@@ -129,7 +119,7 @@
         <section class="metrics" aria-label="Résumé des réponses">
             <div class="metric"><strong>{{ total_count }}</strong><span>Réponses reçues</span></div>
             <div class="metric"><strong>{{ total_site_visitors }}</strong><span>Personnes ayant visité le site</span></div>
-            <div class="metric"><strong>{% if best_agent %}{{ best_agent.score|round(1) }}{% else %}--{% endif %}</strong><span>Meilleure note</span></div>
+            <div class="metric"><strong>{% if best_agent %}{{ best_agent.score|round(1) }}/100{% else %}--{% endif %}</strong><span>Meilleure note</span></div>
             <div class="metric"><strong>{{ recommendation_rate }}%</strong><span>Recommandation</span></div>
         </section>
 
@@ -140,11 +130,11 @@
             {% if rows %}
             <div class="table-wrap">
                 <table>
-                    <thead><tr><th>Date</th><th>Site</th><th>Classement de l’agent</th><th>Structure</th><th>CSAT</th><th>CES</th><th>NPS</th></tr></thead>
+                    <thead><tr><th>Moment de la visite</th><th>Site</th><th>Classement de l’agent</th><th>Structure</th><th>CSAT</th><th>CES</th><th>NPS</th></tr></thead>
                     <tbody>
                         {% for row in rows %}
                         <tr>
-                            <td>{{ row.date_soumission[:10] | replace('-', '/') }}</td>
+                            <td>{{ row.moment_journee or '-' }}</td>
                             <td><span class="site-badge {% if row.site == 'Siege CNPS' %}siege{% elif row.site == 'APS Province' %}province{% endif %}">{{ row.site | replace('APS ', 'Agence ') }}</span></td>
                             <td style="display: flex; flex-direction: column; justify-content: flex-end; min-height: 60px;">
                                 <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: flex-end; min-height: 38px;">
