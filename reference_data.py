@@ -43,9 +43,9 @@ def get_agents():
 # Échelle de notation utilisée pour les questions notées 1 à 5
 # ------------------------------------------------------------------
 ECHELLE = [
-    (1, "Pas du tout"),
-    (2, "Plutôt non"),
-    (3, "Moyennement"),
-    (4, "Plutôt oui"),
-    (5, "Tout à fait"),
+    (1, "Très insatisfait"),
+    (2, "Insatisfait"),
+    (3, "Neutre"),
+    (4, "Satisfait"),
+    (5, "Très satisfait"),
 ]

@@ -9,7 +9,7 @@
             {% for valeur, libelle in echelle %}
             <div class="scale-option">
                 <input type="radio" name="q14" id="q14_{{ valeur }}" value="{{ valeur }}" required>
-                <label for="q14_{{ valeur }}">{{ valeur }}<br>{{ libelle }}</label>
+                <label for="q14_{{ valeur }}"><span class="rating-star" aria-hidden="true">★</span><span class="rating-label">{{ libelle }}</span></label>
             </div>
             {% endfor %}
         </div>
@@ -21,7 +21,7 @@
             {% for valeur, libelle in echelle %}
             <div class="scale-option">
                 <input type="radio" name="q15" id="q15_{{ valeur }}" value="{{ valeur }}" required>
-                <label for="q15_{{ valeur }}">{{ valeur }}<br>{{ libelle }}</label>
+                <label for="q15_{{ valeur }}"><span class="rating-star" aria-hidden="true">★</span><span class="rating-label">{{ libelle }}</span></label>
             </div>
             {% endfor %}
         </div>
@@ -33,7 +33,7 @@
             {% for i in range(1, 11) %}
             <div class="scale-option">
                 <input type="radio" name="q16" id="q16_{{ i }}" value="{{ i }}" required>
-                <label for="q16_{{ i }}">{{ i }}</label>
+                <label for="q16_{{ i }}"><span class="rating-star" aria-hidden="true">★</span><span class="rating-label">{{ i }}</span></label>
             </div>
             {% endfor %}
         </div>

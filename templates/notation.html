@@ -9,7 +9,7 @@
             {% for valeur, libelle in echelle %}
             <div class="scale-option">
                 <input type="radio" name="{{ code }}" id="{{ code }}_{{ valeur }}" value="{{ valeur }}" required>
-                <label for="{{ code }}_{{ valeur }}">{{ valeur }}<br>{{ libelle }}</label>
+                <label for="{{ code }}_{{ valeur }}"><span class="rating-star" aria-hidden="true">★</span><span class="rating-label">{{ libelle }}</span></label>
             </div>
             {% endfor %}
         </div>

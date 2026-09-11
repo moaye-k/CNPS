@@ -277,7 +277,7 @@ def etape4():
         return redirect(url_for("etape5"))
 
     questions = [
-        ("q11", "L'agent vous a clairement orienté(e) (borne à tickets, invitation à patienter, information utile)."),
+        ("q11", "L'agent vous a clairement orienté(e) (invitation à patienter ou information utile)."),
         ("q12", "L'agent a répondu à votre demande ou vous a dirigé(e) efficacement vers la bonne personne."),
         ("q13", "L'agent a pris congé de manière courtoise et personnalisée, avec le sourire."),
     ]
