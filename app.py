@@ -91,6 +91,47 @@ def get_response_score(row):
     return round(sum(scores) / len(scores), 1) if scores else 0
 
 
+def get_ces_label(value):
+    if value is None:
+        return "-"
+
+    value_str = str(value).strip()
+    if not value_str:
+        return "-"
+
+    normalized = value_str.strip().lower()
+    text_map = {
+        "oui, tout à fait": "Très facile",
+        "oui, tout a fait": "Très facile",
+        "plutôt oui": "Facile",
+        "plutot oui": "Facile",
+        "neutre": "Moyen",
+        "non, pas vraiment": "Difficile",
+        "non": "Difficile",
+        "pas du tout": "Très difficile",
+        "insatisfait": "Très difficile",
+        "très satisfait": "Très facile",
+        "tres satisfait": "Très facile",
+    }
+    if normalized in text_map:
+        return text_map[normalized]
+
+    try:
+        score = int(float(value_str))
+    except (TypeError, ValueError):
+        return value_str
+
+    if score <= 2:
+        return "Très difficile"
+    if score <= 4:
+        return "Difficile"
+    if score <= 6:
+        return "Moyen"
+    if score <= 8:
+        return "Facile"
+    return "Très facile"
+
+
 def get_ranked_agents(rows, limit=5):
     agent_stats = {}
 
@@ -144,6 +185,7 @@ def get_agent_rank_label(agent_name, agent_rank_map):
 
 
 app.jinja_env.globals['get_agent_rank_label'] = get_agent_rank_label
+app.jinja_env.globals['get_ces_label'] = get_ces_label
 
 
 def save_response(data: dict):
@@ -431,7 +473,7 @@ def admin_reponses():
                 Paragraph(row.get("agents_evalues", "") or "Non renseigné", body_style),
                 Paragraph(row.get("structure", ""), body_style),
                 f"{row.get('q14_satisfaction_globale', '-')}/5",
-                Paragraph(row.get("q16_recommandation", "") or "-", body_style),
+                Paragraph(get_ces_label(row.get("q16_recommandation", "")), body_style),
             ])
         table = Table(table_data, colWidths=[25 * mm, 34 * mm, 70 * mm, 42 * mm, 28 * mm, 50 * mm], repeatRows=1)
         table.setStyle(TableStyle([

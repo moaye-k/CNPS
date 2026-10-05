@@ -143,7 +143,7 @@
                             </td>
                             <td>{{ row.structure }}</td>
                             <td><span class="score {% if row.q14_satisfaction_globale|int < 4 %}low{% endif %}">{{ row.q14_satisfaction_globale or '-' }}/5</span></td>
-                            <td>{{ row.q16_recommandation or '-' }}</td>
+                            <td>{{ get_ces_label(row.q16_recommandation) }}</td>
                             <td class="justifications">
                                 <div><strong>Apprécié :</strong> {{ row.q17_positif or 'Non renseigné' }}</div>
                                 <div><strong>À améliorer :</strong> {{ row.q18_amelioration or 'Non renseigné' }}</div>
